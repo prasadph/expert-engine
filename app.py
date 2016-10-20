@@ -62,7 +62,9 @@ def login():
             session['logged_in'] = True
             session['user_id'] = cursor.fetchone()['id']
             flash('You were logged in')
-            return redirect(url_for('signup'))
+            sql = "UPDATE users set login=CURRENT_TIMESTAMP where id= %s"
+            cursor.execute(sql,(session['user_id'], ))
+            return redirect(url_for('create_thread'))
         else:
             flash('Invalid Username or password')
             error = 'Invalid Username or password'
