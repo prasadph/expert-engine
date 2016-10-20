@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+<h1>{{thread.title}}<h1>
+  <h2>{{thread.content}}<h2>
+{% for comment in comments %}
+  <p>{{comment.text}} <small>{{comment.created}}</small></p>
+{% else %}
+    <em>Unbelievable.  No entries here so far</em>
+  {% endfor %}
+
+</div>
+{% endblock %}

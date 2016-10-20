@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="container">
+    {% for thread in threads %}
+  <!-- <div class="row">
+    <div class="col-md-2"><a href="/thread/{{ thread.id }}">{{ thread.title }}</a></div>
+    <div class="col-md-8">{{ thread.content }}</div>
+
+  </div> -->
+  <div class="panel panel-info">
+    <div class="panel-heading"><a href="/thread/{{ thread.id }}">{{ thread.title }}</a> by <small>{{thread.username}}</small></div>
+      <div class="panel-body">
+        {{ thread.content }}
+      </div>
+  </div>
+  {% else %}
+    <em>Unbelievable.  No entries here so far</em>
+  {% endfor %}
+  <nav aria-label="Page navigation">
+  <ul class="pagination">
+    <li>
+      <a href="#" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li><a href="#">1</a></li>
+    <li><a href="#">2</a></li>
+    <li><a href="#">3</a></li>
+    <li><a href="#">4</a></li>
+    <li><a href="#">5</a></li>
+    <li>
+      <a href="#" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+
+</div>
+{% endblock %}

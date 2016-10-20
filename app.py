@@ -18,7 +18,7 @@ app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
 
 def connect_db():
-    db = MySQLdb.connect("localhost","root","root","discussionforum")
+    db = MySQLdb.connect("localhost","forum","forumforum","discussionforum")
     db.autocommit(True)
     db.cursorclass=MySQLdb.cursors.DictCursor
     return db
@@ -65,7 +65,7 @@ def login():
             return redirect(url_for('signup'))
         else:
             flash('Invalid Username or password')
-            error = 'Invalid username'
+            error = 'Invalid Username or password'
 
     return render_template('login.html', error=error)
 
@@ -74,6 +74,51 @@ def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
     return redirect(url_for('login'))
+
+@app.route('/threads')
+def threads():
+    sql = "SELECT threads.id, title, content, users_id, concat(users.fname,' ',users.lname) username from threads join users on `users`.`id`= `threads`.`users_id` where blocked = 0 and groups_id is NULL"
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(sql)
+    threads = cursor.fetchall()
+    print(threads)
+    return render_template('threads.html', threads=threads)
+
+@app.route('/thread/<int:threads_id>')
+def thread(threads_id):
+
+    db = get_db()
+    sql = "SELECT * from comments join users on comments.users_id=users.id where threads_id= %s"
+    cursor = db.cursor()
+    cursor.execute(sql, (int(threads_id),))
+    comments = cursor.fetchall()
+    print(comments)
+    sql = "SELECT * from threads where id= %s limit 1"
+    cursor.execute(sql, (int(threads_id),))
+    thread = cursor.fetchone()
+    # print(comments)
+    return render_template('thread.html', comments=comments, thread=thread)
+
+
+@app.route('/create',methods=['POST', 'GET'])
+def create_thread():
+    if not session['logged_in']:
+        flash('You need to login to continue')
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+
+        sql = "INSERT into threads (`title`, `content`, `users_id`) VALUES( %s, %s, %s)"
+        db = get_db()
+        cursor = db.cursor()
+        print(session['user_id'])
+        cursor.execute(sql, (
+            request.form['title'],
+            request.form['content'],
+            int(session['user_id'])
+            )
+        )
+    return render_template('thread_new.html')
 
 # @app.route('/')
 # @app.route('/hello/<name>')
