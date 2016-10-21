@@ -118,9 +118,42 @@ def create_thread():
         return redirect(url_for('login'))
     if request.method == 'POST':
 
-        sql = "INSERT into threads (`title`, `content`, `users_id`) VALUES( %s, %s, %s)"
         db = get_db()
+        # db.autocommit(False)
         cursor = db.cursor()
+        # insert thread ;get threads_id
+        # check and insert into tags table
+        # get all tags_id
+        sql = "SELECT id from tags where name in ('dasd','dadad')"
+        # add to join table
+        sql = "INSERT INTO tags_users ('tags_id','threads_id') VALUES(*, thread_id)"
+        print(request.form)
+        tags = request.form['tags'].split('\r\n')
+        tags = [x for x in tags if x !=""]
+        print(tags)
+        l = len(tags)
+
+        # insert tags before use if missing
+        temp = "(" + "),(".join(["%s" for i in range(l)]) + ")"
+        sql = "INSERT IGNORE into tags (name) VALUES " + temp
+        print(sql)
+
+        s = ""
+        for i in range(l):
+            s += "%s,"
+        else:
+            s = s[:-1]
+        print(s)
+        sql = "SELECT id from tags where name in ( {} )".format(s)
+        print(sql)
+        cursor.execute(sql, tags)
+        if cursor.rowcount != l:
+            raise ValueError
+        tag_ids = cursor.fetchall()
+        print(tag_ids)
+
+        sql = "INSERT into threads (`title`, `content`, `users_id`) VALUES( %s, %s, %s)"
+
         print(session['user_id'])
         cursor.execute(sql, (
             request.form['title'],
@@ -128,6 +161,11 @@ def create_thread():
             int(session['user_id'])
             )
         )
+        thread_id = cursor.lastrowid
+        sql = "INSERT INTO tags_has_threads (`tags_id`,`threads_id`) VALUES(%s, {})".format(thread_id)
+        print(sql, str(tag_ids))
+        cursor.executemany(sql,[ [i['id']] for i in tag_ids] )
+
     return render_template('thread_new.html')
 
 
