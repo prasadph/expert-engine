@@ -1,7 +1,6 @@
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash
 import MySQLdb
-# import flask_mysql
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -28,11 +27,13 @@ def get_db():
         g.mysql_db = connect_db()
     return g.mysql_db
 
+
 @app.teardown_appcontext
 def close_db(error):
     """Closes the database again at the end of the request."""
     if hasattr(g, 'mysql_db'):
         g.mysql_db.close()
+
 
 @app.route('/join', methods=['GET','POST'])
 def signup():
@@ -49,6 +50,7 @@ def signup():
 
         flash('New Account Created')
     return render_template('signup.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -71,15 +73,20 @@ def login():
 
     return render_template('login.html', error=error)
 
+
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
     return redirect(url_for('login'))
 
-@app.route('/threads')
+
+@app.route('/threads/')
 def threads():
-    sql = "SELECT threads.id, title, content, users_id, concat(users.fname,' ',users.lname) username from threads join users on `users`.`id`= `threads`.`users_id` where blocked = 0 and groups_id is NULL"
+    sql = """SELECT threads.id, title, content, users_id, concat(users.fname,' ',users.lname) username \
+        from threads \
+        join users on `users`.`id`= `threads`.`users_id` \
+        where blocked = 0 and groups_id is NULL"""
     db = get_db()
     cursor = db.cursor()
     cursor.execute(sql)
@@ -87,7 +94,8 @@ def threads():
     print(threads)
     return render_template('threads.html', threads=threads)
 
-@app.route('/thread/<int:threads_id>')
+
+@app.route('/threads/<int:threads_id>')
 def thread(threads_id):
 
     db = get_db()
@@ -103,7 +111,7 @@ def thread(threads_id):
     return render_template('thread.html', comments=comments, thread=thread)
 
 
-@app.route('/create',methods=['POST', 'GET'])
+@app.route('/threads/new',methods=['POST', 'GET'])
 def create_thread():
     if not session['logged_in']:
         flash('You need to login to continue')
@@ -122,15 +130,6 @@ def create_thread():
         )
     return render_template('thread_new.html')
 
-# @app.route('/')
-# @app.route('/hello/<name>')
-# def hello_world(name=None):
-#     db = get_db()
-#     cursor = db.cursor(MySQLdb.cursors.DictCursor)
-#     cursor.execute("SELECT * from tags")
-#     print(cursor.fetchall())
-#     # db.commit()
-#     return render_template('hello.html', name=name)
 
 if __name__ == '__main__':
     app.config['DEBUG'] = True
