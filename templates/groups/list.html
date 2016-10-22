@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block body %}
+<h1>List of your groups</h1>
+{% for group in groups %}
+<h3><a href="{{url_for('group_view', groups_id=group.id) }}">{{ group.name }}</a></h3>
+{% else %}
+<h3>You are not in any group</h3>
+{% endfor %}
+{% endblock %}

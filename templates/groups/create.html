@@ -1,9 +1,14 @@
 {% extends "layout.html" %}
 {% block title %}
-Groups
+Create New Group
 {% endblock %}
 {% block body %}
 <div class="container">
-<h1>Groups</h1>
+    <h1>Create New Group</h1>
+    <form method="post">
+        <input class="form-control" type="text" name="name" placeholder="Enter Group Title">
+        <textarea class="form-control" rows="3" name="emails" placeholder="Enter email of members each on new line"></textarea>
+        <button class="btn btn-default" type="submit" >Create</button>
+    </form>
 </div>
 {% endblock %}
