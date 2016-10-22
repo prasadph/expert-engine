@@ -5,11 +5,6 @@
 {% block body %}
 <div class="container">
     {% for thread in threads %}
-  <!-- <div class="row">
-    <div class="col-md-2"><a href="/thread/{{ thread.id }}">{{ thread.title }}</a></div>
-    <div class="col-md-8">{{ thread.content }}</div>
-
-  </div> -->
   <div class="panel panel-info">
     <div class="panel-heading">
       <a href="{{ url_for('show_thread',threads_id=thread.id) }}">{{ thread.title }}</a>

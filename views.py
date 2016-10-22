@@ -1,4 +1,4 @@
-from flask import Flask, request, session, g, redirect, url_for, abort, \
+from flask import request, session, g, redirect, url_for, abort, \
      render_template, flash
 from app import app, get_db
 
@@ -69,7 +69,7 @@ def show_thread(threads_id):
     sql = "select tags.id,tags.name from tags_has_threads join tags on tags.id= tags_id where threads_id=%s"
     cursor.execute(sql, (threads_id, ))
     tags = cursor.fetchall()
-    return render_template('thread.html', comments=comments, thread=thread, tags=tags)
+    return render_template('threads/thread.html', comments=comments, thread=thread, tags=tags)
 
 
 @app.route('/threads/')
@@ -83,7 +83,7 @@ def list_threads():
     cursor.execute(sql)
     threads = cursor.fetchall()
     print(threads)
-    return render_template('threads.html', threads=threads)
+    return render_template('threads/threads.html', threads=threads)
 
 
 @app.route('/threads/new', methods=['POST', 'GET'])
@@ -94,51 +94,68 @@ def create_thread():
     if request.method == 'POST':
 
         db = get_db()
-        # db.autocommit(False)
+        db.autocommit(False)
         cursor = db.cursor()
+        try:
+            print(request.form)
+            tags = request.form['tags'].split('\r\n')
+            tags = [x for x in tags if x != ""]
+            print(tags)
+            l = len(tags)
 
-        print(request.form)
-        tags = request.form['tags'].split('\r\n')
-        tags = [x for x in tags if x != ""]
-        print(tags)
-        l = len(tags)
+            # insert tags before use if missing
+            temp = "(" + "),(".join(["%s" for i in range(l)]) + ")"
+            sql = "INSERT IGNORE into tags (name) VALUES " + temp
+            print(sql)
+            cursor.execute(sql, tags)
+            s = ""
+            for i in range(l):
+                s += "%s,"
+            else:
+                s = s[:-1]
+            print(s)
+            sql = "SELECT id from tags where name in ( {} )".format(s)
+            print(sql)
+            cursor.execute(sql, tags)
+            if cursor.rowcount != l:
+                print("tags retrieved: ", cursor.rowcount, l)
+                print(cursor.statement)
+                raise Exception("All tags not inserted")
+            tag_ids = cursor.fetchall()
+            print(tag_ids)
 
-        # insert tags before use if missing
-        temp = "(" + "),(".join(["%s" for i in range(l)]) + ")"
-        sql = "INSERT IGNORE into tags (name) VALUES " + temp
-        print(sql)
-        cursor.execute(sql, tags)
-        s = ""
-        for i in range(l):
-            s += "%s,"
-        else:
-            s = s[:-1]
-        print(s)
-        sql = "SELECT id from tags where name in ( {} )".format(s)
-        print(sql)
-        cursor.execute(sql, tags)
-        if cursor.rowcount != l:
-            print("tags retrieved: ", cursor.rowcount, l)
-            print(cursor.statement)
-            raise Exception("All tags not inserted")
-        tag_ids = cursor.fetchall()
-        print(tag_ids)
+            sql = "INSERT into threads (`title`, `content`, `users_id`) VALUES( %s, %s, %s)"
 
-        sql = "INSERT into threads (`title`, `content`, `users_id`) VALUES( %s, %s, %s)"
-
-        print(session['user_id'])
-        cursor.execute(sql, (
-            request.form['title'],
-            request.form['content'],
-            int(session['user_id'])
+            print(session['user_id'])
+            cursor.execute(sql, (
+                request.form['title'],
+                request.form['content'],
+                int(session['user_id'])
+                )
             )
-        )
-        thread_id = cursor.lastrowid
-        sql = "INSERT INTO tags_has_threads (`tags_id`,`threads_id`) VALUES(%s, {})".format(thread_id)
-        print(sql, str(tag_ids))
-        cursor.executemany(sql, [[i['id']] for i in tag_ids])
-        flash("New Thread created", 'success')
-        # provide better control here
+            thread_id = cursor.lastrowid
+            sql = "INSERT INTO tags_has_threads (`tags_id`,`threads_id`) VALUES(%s, {})".format(thread_id)
+            print(sql, str(tag_ids))
+            cursor.executemany(sql, [[i['id']] for i in tag_ids])
+            flash("New Thread created", 'success')
+            # provide better control here
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            print(e)
+            abort(401)
         return redirect(url_for('show_thread', threads_id=thread_id))
 
-    return render_template('thread_new.html')
+    return render_template('threads/thread_new.html')
+
+
+@app.route('/groups/search')
+def group_search():
+    """Lets you search groups across the site"""
+    return render_template("groups/search.html")
+
+
+@app.route('/groups/list')
+def group_list():
+    """Lets you view your groups"""
+    return render_template("groups/search.html")
