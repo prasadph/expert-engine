@@ -22,6 +22,7 @@ def connect_db():
     db.cursorclass=MySQLdb.cursors.DictCursor
     return db
 
+
 def get_db():
     if not hasattr('g','mysql_db'):
         g.mysql_db = connect_db()
@@ -46,7 +47,7 @@ def signup():
         sql = """INSERT INTO `users` ( `email`, `fname`, `lname`, `password`)
                 VALUES (%s, %s, %s, %s)"""
         cursor = db.cursor()
-        cursor.execute(sql,(form['email'],form['fname'],form['lname'],form['password']))
+        cursor.execute(sql, (form['email'],form['fname'],form['lname'],form['password']))
 
         flash('New Account Created')
     return render_template('signup.html')
@@ -65,7 +66,7 @@ def login():
             session['user_id'] = cursor.fetchone()['id']
             flash('You were logged in')
             sql = "UPDATE users set login=CURRENT_TIMESTAMP where id= %s"
-            cursor.execute(sql,(session['user_id'], ))
+            cursor.execute(sql, (session['user_id'], ))
             return redirect(url_for('create_thread'))
         else:
             flash('Invalid Username or password')
@@ -82,7 +83,7 @@ def logout():
 
 
 @app.route('/threads/')
-def threads():
+def list_threads():
     sql = """SELECT threads.id, title, content, users_id, concat(users.fname,' ',users.lname) username \
         from threads \
         join users on `users`.`id`= `threads`.`users_id` \
@@ -96,7 +97,7 @@ def threads():
 
 
 @app.route('/threads/<int:threads_id>')
-def thread(threads_id):
+def show_thread(threads_id):
 
     db = get_db()
     sql = "SELECT * from comments join users on comments.users_id=users.id where threads_id= %s"
@@ -108,10 +109,13 @@ def thread(threads_id):
     cursor.execute(sql, (int(threads_id),))
     thread = cursor.fetchone()
     # print(comments)
-    return render_template('thread.html', comments=comments, thread=thread)
+    sql = "select tags.id,tags.name from tags_has_threads join tags on tags.id= tags_id where threads_id=%s"
+    cursor.execute(sql, (threads_id, ))
+    tags = cursor.fetchall()
+    return render_template('thread.html', comments=comments, thread=thread, tags=tags)
 
 
-@app.route('/threads/new',methods=['POST', 'GET'])
+@app.route('/threads/new', methods=['POST', 'GET'])
 def create_thread():
     if not session['logged_in']:
         flash('You need to login to continue')
@@ -121,15 +125,10 @@ def create_thread():
         db = get_db()
         # db.autocommit(False)
         cursor = db.cursor()
-        # insert thread ;get threads_id
-        # check and insert into tags table
-        # get all tags_id
-        sql = "SELECT id from tags where name in ('dasd','dadad')"
-        # add to join table
-        sql = "INSERT INTO tags_users ('tags_id','threads_id') VALUES(*, thread_id)"
+
         print(request.form)
         tags = request.form['tags'].split('\r\n')
-        tags = [x for x in tags if x !=""]
+        tags = [x for x in tags if x != ""]
         print(tags)
         l = len(tags)
 
@@ -137,7 +136,7 @@ def create_thread():
         temp = "(" + "),(".join(["%s" for i in range(l)]) + ")"
         sql = "INSERT IGNORE into tags (name) VALUES " + temp
         print(sql)
-
+        cursor.execute(sql, tags)
         s = ""
         for i in range(l):
             s += "%s,"
@@ -148,7 +147,9 @@ def create_thread():
         print(sql)
         cursor.execute(sql, tags)
         if cursor.rowcount != l:
-            raise ValueError
+            print("tags retrieved: ", cursor.rowcount, l)
+            print(cursor.statement)
+            raise Exception("All tags not inserted")
         tag_ids = cursor.fetchall()
         print(tag_ids)
 
@@ -164,7 +165,10 @@ def create_thread():
         thread_id = cursor.lastrowid
         sql = "INSERT INTO tags_has_threads (`tags_id`,`threads_id`) VALUES(%s, {})".format(thread_id)
         print(sql, str(tag_ids))
-        cursor.executemany(sql,[ [i['id']] for i in tag_ids] )
+        cursor.executemany(sql, [[i['id']] for i in tag_ids])
+        flash("New Thread created", 'success')
+        # provide better control here
+        return redirect(url_for('show_thread', threads_id=thread_id))
 
     return render_template('thread_new.html')
 
