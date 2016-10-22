@@ -1,5 +1,5 @@
-from flask import Flask, g
 import MySQLdb
+from flask import Flask, g
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -23,16 +23,11 @@ def connect_db():
 
 
 def get_db():
-    if not hasattr('g','mysql_db'):
+    if not hasattr('g', 'mysql_db'):
         g.mysql_db = connect_db()
     return g.mysql_db
 
-from views import (show_thread,
-                   list_threads,
-                   create_thread,
-                   login, logout,
-                   signup,
-                   )
+from views import groups, threads, users
 
 
 @app.teardown_appcontext
