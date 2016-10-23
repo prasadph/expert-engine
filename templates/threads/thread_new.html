@@ -1,4 +1,7 @@
 {% extends "layout.html" %}
+{% block title %}
+  Create new thread
+{% endblock %}
 {% block body %}
 <div class="container">
     <h1>Create a new thread</h1>
@@ -6,14 +9,7 @@
   <div class='col-md-3'></div>
     <div class='col-md-6'>
     <form class="form-horizontal" method="post">
-      <!-- <div class="form-group">
-        <label class="control-label col-sm-2">First Name</label>
-        <div class="col-sm-10">
-          <input class="form-control" name='fname' placeholder='First Name' type="text">
-        </div>
-      </div> -->
       <input class="form-control" name='title' placeholder='Title' type="text" maxlength="200" required>
-      <!-- <input class="form-control" name='content' placeholder='Content' type="textarea"> -->
         <textarea class="form-control" name='content' placeholder="explain question" rows="3" maxlength="950" required></textarea>
         <textarea class="form-control" name='tags' placeholder="tags" rows="3"></textarea>
       <button class="btn btn-primary"type="submit">Create New Thread</button>
