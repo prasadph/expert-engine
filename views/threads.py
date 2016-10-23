@@ -46,7 +46,7 @@ def show_thread(threads_id):
     return render_template('threads/thread.html', comments=comments, thread=thread, tags=tags)
 
 
-@app.route('/threads/')
+@app.route('/threads')
 def list_threads():
     sql = """SELECT threads.id, title, content, users_id, threads.created, concat(users.fname,' ',users.lname) username \
         from threads \
@@ -78,6 +78,27 @@ def threads_by_tagid(tags_id):
     threads = cursor.fetchall()
     return render_template('threads/threads_by_tagid.html', threads=threads, tag=tag)
 
+@app.route('/threads/search')
+def threads_search():
+    sql = """SELECT distinct threads.id, threads.title, threads.content, threads.created,concat(users.fname,' ',users.lname) username
+        from threads
+        join users on users.id= threads.users_id
+        join tags_has_threads on tags_has_threads.threads_id= threads.id
+        join tags on tags_has_threads.tags_id= tags.id
+        where threads.title LIKE %s and groups_id is NULL or tags.name LIKE %s
+        order by created desc"""
+    db = get_db()
+    cursor = db.cursor()
+    try:
+        searchword = request.args.get('keyword')
+    except KeyError:
+        abort(401)
+    if not searchword :
+        return redirect(url_for('list_threads'))
+    tup = ("%"+searchword+ "%")
+    cursor.execute(sql, (tup,tup))
+    threads = cursor.fetchall()
+    return render_template('threads/search.html', threads=threads, searchword=searchword)
 
 @app.route('/threads/tags/list')
 def display_all_tags():

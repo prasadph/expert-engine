@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}
+  Threads search for {{searchword}}
+{% endblock %}
+{% block body %}
+<div class="container">
+  <h1>   Threads search for {{searchword}}</h1>
+{% include "views/thread_list_view.html" %}
+</div>
+{% endblock %}
