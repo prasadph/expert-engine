@@ -61,6 +61,37 @@ def list_threads():
     return render_template('threads/threads.html', threads=threads)
 
 
+@app.route('/threads/tags/<int:tags_id>')
+def threads_by_tagid(tags_id):
+    sql = """SELECT threads.id, title, content, users_id, threads.created, concat(users.fname,' ',users.lname) username \
+        from threads \
+        join users on `users`.`id`= `threads`.`users_id` \
+        join tags_has_threads on `tags_has_threads`.`threads_id`= `threads`.`id` \
+        where blocked = 0 and groups_id is NULL and tags_id= %s \
+        order by threads.created desc"""
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(sql, (tags_id,))
+    threads = cursor.fetchall()
+    return render_template('threads/threads.html', threads=threads)
+
+
+@app.route('/threads/tags/list')
+def display_all_tags():
+    sql = """SELECT  tags.id, tags.name, count(*) c\
+        from tags \
+        join tags_has_threads on `tags_has_threads`.`tags_id`= `tags`.`id` \
+        group by tags.id
+        order by tags.name desc"""
+    # sql query will list tags even if thread are protected
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(sql)
+    tags= cursor.fetchall()
+    print(tags)
+    return render_template('threads/tags.html', tags=tags)
+
+
 @app.route('/threads/new', methods=['POST', 'GET'])
 def create_thread():
     if not session['logged_in']:
