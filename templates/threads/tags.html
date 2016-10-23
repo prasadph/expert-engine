@@ -1,8 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-  {% for tag in tags %}
-  <div>
-    <a href="{{url_for('threads_by_tagid', tags_id=tag.id)}}">#{{tag.name}} {{tag.c}}</a>
-  </div>
-  {% endfor %}
+<div class="container">
+{% include "views/tag_buttons.html" %}
+</div>
 {% endblock %}

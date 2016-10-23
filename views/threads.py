@@ -57,7 +57,6 @@ def list_threads():
     cursor = db.cursor()
     cursor.execute(sql)
     threads = cursor.fetchall()
-    print(threads)
     return render_template('threads/threads.html', threads=threads)
 
 
@@ -71,9 +70,13 @@ def threads_by_tagid(tags_id):
         order by threads.created desc"""
     db = get_db()
     cursor = db.cursor()
+    cursor.execute("SELECT tags.name from tags where tags.id= %s limit 1",(tags_id,))
+    tag = cursor.fetchone()
+    if not tag:
+        abort(404)
     cursor.execute(sql, (tags_id,))
     threads = cursor.fetchall()
-    return render_template('threads/threads.html', threads=threads)
+    return render_template('threads/threads_by_tagid.html', threads=threads, tag=tag)
 
 
 @app.route('/threads/tags/list')
@@ -82,13 +85,12 @@ def display_all_tags():
         from tags \
         join tags_has_threads on `tags_has_threads`.`tags_id`= `tags`.`id` \
         group by tags.id
-        order by tags.name desc"""
+        order by c desc"""
     # sql query will list tags even if thread are protected
     db = get_db()
     cursor = db.cursor()
     cursor.execute(sql)
     tags= cursor.fetchall()
-    print(tags)
     return render_template('threads/tags.html', tags=tags)
 
 

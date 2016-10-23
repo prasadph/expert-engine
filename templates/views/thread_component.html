@@ -11,9 +11,7 @@
 {% if tags %}
     <div class="panel-footer">
       <span>Tags</span>
-      {% for tag in tags %}
-          <a href="{{url_for('threads_by_tagid', tags_id=tag.id)}}">#{{tag.name }}</a>
-      {% endfor %}
+      {% include "views/tag_buttons.html" %}
     </div>
 {%  endif %}
 </div>
