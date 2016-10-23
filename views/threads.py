@@ -8,8 +8,13 @@ def show_thread(threads_id):
 
     db = get_db()
     cursor = db.cursor()
-    
-    sql = "SELECT * from threads where id= %s and groups_id is null limit 1"
+
+    sql = """SELECT threads.id, content, title, threads.created, \
+    concat(users.fname,' ',users.lname) username \
+    from threads \
+    join users on users.id= threads.users_id \
+    where threads.id= %s and groups_id is null \
+    limit 1"""
     # checking for groups_id allows us to block private threads
     cursor.execute(sql, (int(threads_id),))
     thread = cursor.fetchone()
@@ -21,7 +26,8 @@ def show_thread(threads_id):
         cursor.execute(sql, (comment_text, threads_id, user_id))
         flash("New Reply Added")
 
-    sql = """SELECT * from comments \
+    sql = """SELECT comments.id, comments.text, concat(users.fname,' ',users.lname) username, comments.created \
+    from comments \
     join users on comments.users_id=users.id \
     where threads_id= %s and blocked=0 \
     order by comments.created desc"""
@@ -68,7 +74,7 @@ def create_thread():
         try:
             print(request.form)
             tags = request.form['tags'].split('\r\n')
-            tags = [x for x in tags if x != ""]
+            tags = [x.lower() for x in tags if x != ""]
             print(tags)
             l = len(tags)
 

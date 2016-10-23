@@ -1,0 +1,19 @@
+<div class="panel panel-info">
+  <div class="panel-heading">
+    <a href="{{ url_for('show_thread',threads_id=thread.id) }}">{{ thread.title }}</a>
+    by <small>@{{thread.username}}</small>
+    <small> at {{thread.created}}</small>
+  </div>
+
+    <div class="panel-body">
+      {{ thread.content }}
+    </div>
+{% if tags %}
+    <div class="panel-footer">
+      <span>Tags</span>
+      {% for tag in tags %}
+          <a href="">#{{tag.name }}</a>
+      {% endfor %}
+    </div>
+{%  endif %}
+</div>

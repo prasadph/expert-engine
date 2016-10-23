@@ -5,17 +5,7 @@
 {% block body %}
 <div class="container">
     {% for thread in threads %}
-  <div class="panel panel-info">
-    <div class="panel-heading">
-      <a href="{{ url_for('show_thread',threads_id=thread.id) }}">{{ thread.title }}</a>
-      by <small>{{thread.username}}</small>
-      <small>{{thread.created}}</small>
-    </div>
-
-      <div class="panel-body">
-        {{ thread.content }}
-      </div>
-  </div>
+    {% include "views/thread_component.html" %}
   {% else %}
     <em>Unbelievable.  No entries here so far</em>
   {% endfor %}

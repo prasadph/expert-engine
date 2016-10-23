@@ -50,7 +50,7 @@
         {% if session.logged_in %}
         <li><a href="{{url_for('group_list')}}">Groups</a></li>
         <li><a href="{{url_for('list_threads')}}">View Threads</a></li>
-        <li><a href="#">Something else here</a></li>
+        <li><a href="{{url_for('create_thread')}}">New Thread</a></li>
         <li role="separator" class="divider"></li>
         <li><a href="{{url_for('logout')}}">Logout</a></li>
         {% endif %}
