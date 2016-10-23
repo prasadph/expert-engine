@@ -1,4 +1,7 @@
 {% extends "layout.html" %}
+{% block title %}
+  {{thread.title}}
+{% endblock %}
 {% block body %}
 <div class="container">
 {% include "views/thread_component.html" %}

@@ -52,10 +52,12 @@ def list_threads():
         from threads \
         join users on `users`.`id`= `threads`.`users_id` \
         where blocked = 0 and groups_id is NULL
-        order by threads.created desc"""
+        order by threads.created desc limit %s , %s"""
+    page = request.args.get('page','1')
+    page = int(page)
     db = get_db()
     cursor = db.cursor()
-    cursor.execute(sql)
+    cursor.execute(sql, (page * 10, 10))
     threads = cursor.fetchall()
     return render_template('threads/threads.html', threads=threads)
 
@@ -100,7 +102,7 @@ def threads_search():
     threads = cursor.fetchall()
     return render_template('threads/search.html', threads=threads, searchword=searchword)
 
-@app.route('/threads/tags/list')
+@app.route('/threads/tags')
 def display_all_tags():
     sql = """SELECT  tags.id, tags.name, count(*) c\
         from tags \
