@@ -28,13 +28,17 @@ def signup():
 def login():
     error = None
     if request.method == 'POST':
-        sql = "SELECT id, email, password from users where email= %s and password= %s limit 1"
+        sql = "SELECT id, email, fname, lname from users where email= %s and password= %s limit 1"
         db = get_db()
         cursor = db.cursor()
         cursor.execute(sql, (request.form['email'], request.form['password']))
         if cursor.rowcount:
             session['logged_in'] = True
-            session['user_id'] = cursor.fetchone()['id']
+            user = cursor.fetchone()
+            session['user_id'] = user['id']
+            session['email'] = user['email']
+            session['fname'] = user['fname']
+            session['lname'] = user['lname']
             flash('You were logged in')
             sql = "UPDATE users set login=CURRENT_TIMESTAMP where id= %s"
             cursor.execute(sql, (session['user_id'], ))
@@ -51,5 +55,3 @@ def logout():
     session.pop('logged_in', None)
     flash('You were logged out')
     return redirect(url_for('login'))
-
-

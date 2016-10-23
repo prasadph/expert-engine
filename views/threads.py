@@ -3,20 +3,38 @@ from flask import request, session, g, redirect, url_for, abort, \
 from app import app, get_db
 
 
-@app.route('/threads/<int:threads_id>')
+@app.route('/threads/<int:threads_id>', methods=['GET', 'POST'])
 def show_thread(threads_id):
 
     db = get_db()
-    sql = "SELECT * from comments join users on comments.users_id=users.id where threads_id= %s"
     cursor = db.cursor()
+    
+    sql = "SELECT * from threads where id= %s and groups_id is null limit 1"
+    # checking for groups_id allows us to block private threads
+    cursor.execute(sql, (int(threads_id),))
+    thread = cursor.fetchone()
+
+    if request.method == 'POST':
+        user_id = session['user_id']
+        comment_text = request.form['text']
+        sql = """INSERT into comments (`text`, `threads_id`, `users_id`) VALUES (%s, %s, %s)"""
+        cursor.execute(sql, (comment_text, threads_id, user_id))
+        flash("New Reply Added")
+
+    sql = """SELECT * from comments \
+    join users on comments.users_id=users.id \
+    where threads_id= %s and blocked=0 \
+    order by comments.created desc"""
     cursor.execute(sql, (int(threads_id),))
     comments = cursor.fetchall()
     print(comments)
-    sql = "SELECT * from threads where id= %s limit 1"
-    cursor.execute(sql, (int(threads_id),))
-    thread = cursor.fetchone()
+
     # print(comments)
-    sql = "select tags.id,tags.name from tags_has_threads join tags on tags.id= tags_id where threads_id=%s"
+    sql = """SELECT tags.id,tags.name \
+    from tags_has_threads \
+    join tags on tags.id= tags_id \
+    where threads_id=%s \
+    """
     cursor.execute(sql, (threads_id, ))
     tags = cursor.fetchall()
     return render_template('threads/thread.html', comments=comments, thread=thread, tags=tags)
@@ -24,10 +42,11 @@ def show_thread(threads_id):
 
 @app.route('/threads/')
 def list_threads():
-    sql = """SELECT threads.id, title, content, users_id, concat(users.fname,' ',users.lname) username \
+    sql = """SELECT threads.id, title, content, users_id, threads.created, concat(users.fname,' ',users.lname) username \
         from threads \
         join users on `users`.`id`= `threads`.`users_id` \
-        where blocked = 0 and groups_id is NULL"""
+        where blocked = 0 and groups_id is NULL
+        order by threads.created desc"""
     db = get_db()
     cursor = db.cursor()
     cursor.execute(sql)
@@ -97,6 +116,3 @@ def create_thread():
         return redirect(url_for('show_thread', threads_id=thread_id))
 
     return render_template('threads/thread_new.html')
-
-
-

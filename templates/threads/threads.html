@@ -8,7 +8,10 @@
   <div class="panel panel-info">
     <div class="panel-heading">
       <a href="{{ url_for('show_thread',threads_id=thread.id) }}">{{ thread.title }}</a>
-      by <small>{{thread.username}}</small></div>
+      by <small>{{thread.username}}</small>
+      <small>{{thread.created}}</small>
+    </div>
+
       <div class="panel-body">
         {{ thread.content }}
       </div>
