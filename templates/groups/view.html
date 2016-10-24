@@ -5,10 +5,22 @@
 {% block body %}
 <div class="container">
   <h1>{{ group.name }}</h1>
-  <h2>Members</h2>
-  {% for user in users %}
-    <div><a href="#">@{{user.username}}</a></div>
-  {% endfor %}
+  <div class="row">
+    <div class="col-md-6">
+      <form class="form-horizontal" method="post" action="{{url_for('create_gthread', groups_id=group.id)}}">
+        <input class="form-control" name='title' placeholder='Title' type="text" maxlength="200" required>
+          <textarea class="form-control" name='content' placeholder="explain question" rows="3" maxlength="950" required></textarea>
+          <textarea class="form-control" name='tags' placeholder="tags" rows="3"></textarea>
+        <button class="btn btn-primary"type="submit">Post in {{ group.name }}</button>
+      </form>
+    </div>
+    <div class="col-md-3">
+      <h2>Members</h2>
+      {% for user in users %}
+        <div><a href="#">@{{user.username}}</a></div>
+      {% endfor %}
+    </div>
+  </div>
   <div>
     <h2>Threads</h2>
   {% include "views/thread_list_view.html" %}

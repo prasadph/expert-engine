@@ -15,8 +15,9 @@ def show_thread(threads_id):
     concat(users.fname,' ',users.lname) username, threads.users_id
     from threads \
     join users on users.id= threads.users_id \
-    where threads.id= %s and groups_id is null \
+    where threads.id= %s
     limit 1"""
+    # removed "and groups_id is  null " temporarily
     # checking for groups_id allows us to block private threads
     cursor.execute(sql, (int(threads_id),))
     thread = cursor.fetchone()
@@ -106,7 +107,8 @@ def threads_by_users_id(users_id):
 
 @app.route('/threads/search')
 def threads_search():
-    sql = """SELECT distinct threads.id, threads.title, threads.content, threads.created,concat(users.fname,' ',users.lname) username
+    sql = """SELECT distinct threads.id, threads.title, threads.content, threads.created,
+        concat(users.fname,' ',users.lname) username, threads.users_id
         from threads
         join users on users.id= threads.users_id
         join tags_has_threads on tags_has_threads.threads_id= threads.id
@@ -170,12 +172,13 @@ def thread_new(user_id, form, groups_id=None):
         tag_ids = cursor.fetchall()
         print(tag_ids)
 
-        sql = "INSERT into threads (`title`, `content`, `users_id`) VALUES( %s, %s, %s)"
+        sql = "INSERT into threads (`title`, `content`, `users_id`, `groups_id`) VALUES( %s, %s, %s, %s)"
 
         cursor.execute(sql, (
             form['title'],
             form['content'],
-            user_id
+            user_id,
+            groups_id,
             )
         )
         thread_id = cursor.lastrowid

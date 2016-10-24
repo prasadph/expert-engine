@@ -1,5 +1,5 @@
 {% for tag in tags %}
-    <button class="btn btn-primary" style="margin:6px" OnClick=" location.href='{{url_for('threads_by_tagid', tags_id=tag.id)}}' ">
+    <button class="btn btn-primary" style="margin-left:6px" OnClick=" location.href='{{url_for('threads_by_tagid', tags_id=tag.id)}}' ">
       #{{tag.name}} {% if tag.c %}<span class="badge"> {{tag.c}} </span>{% endif %}
     </button>
 {% endfor %}
