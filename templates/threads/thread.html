@@ -16,7 +16,7 @@
 {% for comment in comments %}
   <div class="well">{{comment.text}}
     <div>
-      by @{{comment.username}} at <small>{{comment.created}}</small>
+      by <a href="{{url_for('threads_by_users_id',users_id=thread.users_id)}}">@{{comment.username}}</a> <small>{{comment.created| time_diff}} ago</small>
     </div>
   </div>
 {% else %}

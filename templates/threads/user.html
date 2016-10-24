@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}
+  {{user.fname}} {{user.lname}}
+{% endblock %}
+{% block body %}
+<div class="container">
+  <h1> Name: {{user.fname}} {{user.lname}}</h1>
+  <h2> Email: {{user.email}}</h2>
+  <h3>Threads</h3>
+{% include "views/thread_list_view.html" %}
+</div>
+{% endblock %}

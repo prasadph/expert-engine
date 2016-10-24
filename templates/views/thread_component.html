@@ -1,7 +1,7 @@
 <div class="panel panel-info">
   <div class="panel-heading">
     <a href="{{ url_for('show_thread',threads_id=thread.id) }}">{{ thread.title }}</a>
-    by <small>@{{thread.username}}</small>
+    by <small><a href="{{url_for('threads_by_users_id',users_id=thread.users_id)}}">@{{thread.username}}</a></small>
     <small> {{thread.created| time_diff}} ago</small>
   </div>
 

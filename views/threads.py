@@ -3,7 +3,8 @@ from flask import request, session, g, redirect, url_for, abort, \
 from app import app, get_db, login_required
 from datetime import datetime
 
-
+# need to prevent display of blocked threads here
+# need to allow display of protected threads to right users
 @app.route('/threads/<int:threads_id>', methods=['GET', 'POST'])
 def show_thread(threads_id):
 
@@ -11,7 +12,7 @@ def show_thread(threads_id):
     cursor = db.cursor()
 
     sql = """SELECT threads.id, content, title, threads.created, \
-    concat(users.fname,' ',users.lname) username \
+    concat(users.fname,' ',users.lname) username, threads.users_id
     from threads \
     join users on users.id= threads.users_id \
     where threads.id= %s and groups_id is null \
@@ -26,6 +27,7 @@ def show_thread(threads_id):
         sql = """INSERT into comments (`text`, `threads_id`, `users_id`) VALUES (%s, %s, %s)"""
         cursor.execute(sql, (comment_text, threads_id, user_id))
         flash("New Reply Added")
+        return redirect(url_for('show_thread', threads_id=threads_id))
 
     sql = """SELECT comments.id, comments.text, concat(users.fname,' ',users.lname) username, comments.created \
     from comments \
@@ -81,6 +83,27 @@ def threads_by_tagid(tags_id):
     threads = cursor.fetchall()
     return render_template('threads/threads_by_tagid.html', threads=threads, tag=tag)
 
+# only public threads
+@app.route('/users/<int:users_id>')
+def threads_by_users_id(users_id):
+    sql = """SELECT distinct threads.id, threads.title, threads.content, threads.created,
+        threads.users_id , concat(users.fname,' ',users.lname) username
+        from threads
+        join users on users.id= threads.users_id
+        where threads.users_id=%s and threads.groups_id is NULL and blocked=0
+        order by threads.created desc"""
+    # getting users_id here is unnecessary, done only to use the threads_component template
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(sql, (users_id,))
+    threads = cursor.fetchall()
+
+    sql = """SELECT * from users where id=%s"""
+    cursor.execute(sql, (users_id,))
+    user = cursor.fetchone()
+    return render_template('threads/user.html', threads=threads, user=user)
+
+
 @app.route('/threads/search')
 def threads_search():
     sql = """SELECT distinct threads.id, threads.title, threads.content, threads.created,concat(users.fname,' ',users.lname) username
@@ -88,7 +111,7 @@ def threads_search():
         join users on users.id= threads.users_id
         join tags_has_threads on tags_has_threads.threads_id= threads.id
         join tags on tags_has_threads.tags_id= tags.id
-        where threads.title LIKE %s and groups_id is NULL or tags.name LIKE %s
+        where threads.title LIKE %s and groups_id is NULL or tags.name LIKE %s and blocked=0
         order by created desc"""
     db = get_db()
     cursor = db.cursor()
@@ -191,7 +214,7 @@ def humanize_time_diff(time):
     temp //= 3600
     if temp:
         return "%d hour(s)" % temp
-    temp //= 60
+    temp = diff.seconds // 60
     if temp:
         return "%d minute(s)" % temp
     return "%d second(s)" % diff.seconds
