@@ -32,9 +32,26 @@ def group_view(groups_id):
     sql = """SELECT * from groups where id=%s"""
     cursor.execute(sql, (groups_id, ))
     group = cursor.fetchone()
+
+    sql = """SELECT users.id, concat(users.fname," ",users.lname) username
+    from users_has_groups
+    join users on users.id = users_has_groups.users_id
+    where groups_id=%s"""
+    cursor.execute(sql, (groups_id, ))
+    users = cursor.fetchall()
+
+    sql = """SELECT distinct threads.id, threads.title, threads.content, threads.created,concat(users.fname,' ',users.lname) username
+    from threads
+    join users_has_groups on threads.users_id=users_has_groups.users_id
+    join users on users.id = users_has_groups.users_id
+    where threads.groups_id=%s"""
+    cursor.execute(sql, (groups_id, ))
+    threads = cursor.fetchall()
+
+
     # need to display group members
     # consider using same template as thread view
-    return render_template("groups/view.html", group=group)
+    return render_template("groups/view.html", group=group, users=users,threads=threads)
 
 
 @app.route('/groups/new', methods=['GET', 'POST'])
