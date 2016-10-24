@@ -1,5 +1,6 @@
 import MySQLdb
-from flask import Flask, g
+from flask import Flask, g, session, redirect, url_for, flash
+from functools import wraps
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -26,6 +27,19 @@ def get_db():
     if not hasattr('g', 'mysql_db'):
         g.mysql_db = connect_db()
     return g.mysql_db
+
+
+def login_required(f):
+    """Checks whether user is logged in or redirects to login page"""
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        print("works")
+        if not session.get('logged_in', 0):
+            flash('You need to login to continue')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorator
+
 
 from views import groups, threads, users
 

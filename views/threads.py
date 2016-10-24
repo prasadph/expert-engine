@@ -1,6 +1,6 @@
 from flask import request, session, g, redirect, url_for, abort, \
      render_template, flash
-from app import app, get_db
+from app import app, get_db, login_required
 from datetime import datetime
 
 
@@ -168,7 +168,9 @@ def thread_new(user_id, form, groups_id=None):
         abort(401)
     return thread_id
 
+
 @app.route('/threads/new', methods=['POST', 'GET'])
+@login_required
 def create_thread():
     if not session.get('logged_in', 0):
         flash('You need to login to continue')
@@ -178,7 +180,6 @@ def create_thread():
         user_id = int(session['user_id'])
         thread_id = thread_new(user_id, form)
         return redirect(url_for('show_thread', threads_id=thread_id))
-
 
     return render_template('threads/thread_new.html')
 
