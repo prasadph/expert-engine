@@ -172,9 +172,6 @@ def thread_new(user_id, form, groups_id=None):
 @app.route('/threads/new', methods=['POST', 'GET'])
 @login_required
 def create_thread():
-    if not session.get('logged_in', 0):
-        flash('You need to login to continue')
-        return redirect(url_for('login'))
     if request.method == 'POST':
         form = request.form
         user_id = int(session['user_id'])

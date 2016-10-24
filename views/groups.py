@@ -1,6 +1,6 @@
 from flask import request, session, g, redirect, url_for, abort, \
      render_template, flash
-from app import app, get_db
+from app import app, get_db, login_required
 
 
 @app.route('/groups/search')
@@ -38,10 +38,9 @@ def group_view(groups_id):
 
 
 @app.route('/groups/new', methods=['GET', 'POST'])
+@login_required
 def group_create():
     """Lets you create new groups"""
-    if not session['logged_in']:
-        return redirect(url_for('login'))
     if request.method == 'POST':
         db = get_db()
         db.autocommit(False)
