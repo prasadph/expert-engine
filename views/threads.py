@@ -1,6 +1,7 @@
 from flask import request, session, g, redirect, url_for, abort, \
      render_template, flash
 from app import app, get_db
+from datetime import datetime
 
 
 @app.route('/threads/<int:threads_id>', methods=['GET', 'POST'])
@@ -54,7 +55,7 @@ def list_threads():
         where blocked = 0 and groups_id is NULL
         order by threads.created desc limit %s , %s"""
     page = request.args.get('page','1')
-    page = int(page)
+    page = int(page) - 1
     db = get_db()
     cursor = db.cursor()
     cursor.execute(sql, (page * 10, 10))
@@ -169,7 +170,7 @@ def thread_new(user_id, form, groups_id=None):
 
 @app.route('/threads/new', methods=['POST', 'GET'])
 def create_thread():
-    if not session['logged_in']:
+    if not session.get('logged_in', 0):
         flash('You need to login to continue')
         return redirect(url_for('login'))
     if request.method == 'POST':
@@ -180,3 +181,19 @@ def create_thread():
 
 
     return render_template('threads/thread_new.html')
+
+@app.template_filter('time_diff')
+def humanize_time_diff(time):
+    # time is datetime.datetime
+    now = datetime.now()
+    diff = now-time
+    if diff.days:
+        return "%d day(s)" % diff.days
+    temp = diff.seconds
+    temp //= 3600
+    if temp:
+        return "%d hour(s)" % temp
+    temp //= 60
+    if temp:
+        return "%d minute(s)" % temp
+    return "%d second(s)" % diff.seconds
