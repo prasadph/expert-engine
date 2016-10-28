@@ -14,8 +14,8 @@
 <!-- Collect the nav links, forms, and other content for toggling -->
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
   <ul class="nav navbar-nav">
-    <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
-    <li><a href="#">Link</a></li>
+    <li class="active"><a href="{{ url_for('display_all_tags') }}">Tags <span class="sr-only">(current)</span></a></li>
+    <li><a href="{{url_for('list_threads')}}">Latest</a></li>
     <li class="dropdown">
       <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
       <ul class="dropdown-menu">
@@ -35,29 +35,29 @@
     </div>
     <button type="submit" class="btn btn-default">Submit</button>
   </form>
+
+  {% if session.logged_in %}
   <ul class="nav navbar-nav navbar-right">
     <li><a href="#">Link</a></li>
     <li class="dropdown">
       <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-        {% if session.logged_in %}
-        {{ session.fname }}
-        {% else %}
-        Guest User
-        {% endif %}
+        <span class="glyphicon glyphicon-user" aria-hidden="true"></span>{{ session.fname }}
         <span class="caret"></span>
       </a>
       <ul class="dropdown-menu">
-        {% if session.logged_in %}
         <li><a href="{{url_for('group_list')}}">Groups</a></li>
-        <li><a href="{{url_for('list_threads')}}">View Threads</a></li>
-        <li><a href="{{url_for('create_thread')}}">New Thread</a></li>
+        <li><a href="{{url_for('list_threads')}}"><span class="glyphicon glyphicon-th-list" aria-hidden="true"></span> View Threads</a></li>
+        <li><a href="{{url_for('create_thread')}}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> New Thread</a></li>
         <li role="separator" class="divider"></li>
-        <li><a href="{{url_for('logout')}}">Logout</a></li>
-        {% endif %}
-
+        <li><a href="{{url_for('logout')}}"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> Logout</a></li>
       </ul>
     </li>
   </ul>
+  {% else %}
+  <ul class="nav navbar-nav navbar-right">
+    <li><a href="{{url_for('login')}}"><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span> Login</a></li>
+  </ul>
+  {% endif %}
 </div><!-- /.navbar-collapse -->
 </div><!-- /.container-fluid -->
 </nav>
